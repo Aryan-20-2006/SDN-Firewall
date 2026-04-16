@@ -14,19 +14,24 @@ def _handle_PacketIn(event):
     if ip_packet:
         src_ip = str(ip_packet.srcip)
 
-        # Log every packet
+        # Log incoming packet
         log.info("Packet received from %s", src_ip)
 
-        # Block rule
+        # Match condition (source IP)
         if src_ip in BLOCKED_IPS:
-            log.info("Blocked IP: %s", src_ip)
+            # Action: DROP
+            log.info("Action: DROP for %s", src_ip)
             return
+        else:
+            # Action: FORWARD
+            log.info("Action: FORWARD for %s", src_ip)
 
-    # Allow (flood to network)
+    # Forward packet (flood)
     msg = of.ofp_packet_out()
     msg.data = event.ofp
     msg.actions.append(of.ofp_action_output(port=of.OFPP_FLOOD))
     event.connection.send(msg)
+
 
 def launch():
     def start_switch(event):
